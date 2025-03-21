@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Configuring a bash script
+# This bash script gets information from
+# a domain and subdomain
+# Function to query and display DNS record information
+
+get_record_info() {
+    local subdomain=$1
+    local domain=$2
+    # Use dig to get the DNS record for the subdomain and domain
+    local result=$(dig +short "$subdomain.$domain")
+    
+    # Check if result is empty
+    if [[ -z "$result" ]]; then
+        echo "The subdomain $subdomain is not found."
+    else
+        echo "The subdomain $subdomain is a A record and points to $result"
+    fi
+}
+
+# Main script to handle subdomains
+domain=$1
+
+# Check for specific subdomain or all default subdomains
+if [[ -n "$2" ]]; then
+    get_record_info "$2" "$domain"
+else
+    get_record_info "www" "$domain"
+    get_record_info "lb-01" "$domain"
+    get_record_info "web-01" "$domain"
+    get_record_info "web-02" "$domain"
+fi
