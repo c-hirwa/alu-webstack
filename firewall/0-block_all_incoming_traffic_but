@@ -1,0 +1,20 @@
+#!usr/bin/env bash 
+
+# Update package list and install ufw if it's not already installed
+sudo apt update
+sudo apt install -y ufw
+
+# Set default policies: deny all incoming traffic and allow all outgoing traffic
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow necessary ports
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+
+# Enable ufw
+sudo ufw --force enable
+
+# Show the status to verify
+sudo ufw status verbose
