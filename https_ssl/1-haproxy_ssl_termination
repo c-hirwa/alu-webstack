@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Updates the current state of the server
+# Installs haproxy on the server
+
+sudo apt-get update -y
+sudo apt install haproxy -y
+
+# New configuration
+new_haproxy_config=\
+"
+frontend http_frontend
+	bind *:80
+        bind *:443 ssl crt /etc/ssl/private/www/topwagner.tech.pem
+        mode http
+
+	# Redirect HTTP to HTTPS
+	http-request redirect scheme https code 301 if !{ ssl_fc }
+        http-request set-header X-Forwarded-Proto https if { ssl_fc }
+        default_backend http_backend
+
+backend http_backend
+        balance roundrobin
+        server 6351-web-01 3.88.209.239:80 check
+        server 6351-web-02 54.242.196.113:80 check
+"
+
+# Backing up the original config file
+sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
+
+# Removing previous custom configuration (if present)
+sudo sed -i '/frontend http_frontend/,/backend http_backend/d' /etc/haproxy/haproxy.cfg
+
+# Writing new configuration to the config file
+echo "$new_haproxy_config" | sudo tee -a /etc/haproxy/haproxy.cfg > /dev/null
+
+# Restart haproxy
+sudo service haproxy restart 
